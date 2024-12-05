@@ -234,4 +234,9 @@ catch e
     rethrow(e)
 end
 
+%% Enhancing Signal Approximation
 
+% one could increase the number of quantization levels but that would be 
+% resource-extensive if implemented irl
+% more elegantly we could resort to more advanced encoding techniques
+% such as arithmetic coding :)
