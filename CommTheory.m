@@ -66,3 +66,12 @@ function [mae, var_error] = quantization_error_analysis(signal, quantized_signal
     var_error = var(error); % Variance of Error
 end
 
+%% Signal-to-Quantization Noise Ratio (SQNR)
+
+function sqnr = calculate_sqnr(signal, quantized_signal)
+    signal_power = mean(signal .^ 2);
+    error = signal - quantized_signal;
+    noise_power = mean((error) .^ 2);
+    sqnr = 10 * log10(signal_power / noise_power);
+end
+
