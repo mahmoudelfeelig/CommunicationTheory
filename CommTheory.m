@@ -58,4 +58,11 @@ function quantized_values = mu_law_quantizer(signal, L, mu)
     quantized_values = quantized_values * max(abs(signal)); % Restore scale
 end
 
+%% Quantization Error Analysis
+
+function [mae, var_error] = quantization_error_analysis(signal, quantized_signal)
+    error = signal - quantized_signal;
+    mae = mean(abs(error)); % Mean Absolute Error
+    var_error = var(error); % Variance of Error
+end
 
