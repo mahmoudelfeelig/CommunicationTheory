@@ -75,3 +75,18 @@ function sqnr = calculate_sqnr(signal, quantized_signal)
     sqnr = 10 * log10(signal_power / noise_power);
 end
 
+%% Huffman Encoding
+
+function [encoded_signal, dict] = huffman_encode(signal)
+    symbols = unique(signal);
+    probabilities = histcounts(signal, [symbols, max(symbols) + 1], 'Normalization', 'probability');
+    dict = huffmandict(symbols, probabilities);
+    encoded_signal = huffmanenco(signal, dict);
+end
+
+%% Huffman Decoding
+
+function decoded_signal = huffman_decode(encoded_signal, dict)
+    decoded_signal = huffmandeco(encoded_signal, dict);
+end
+
