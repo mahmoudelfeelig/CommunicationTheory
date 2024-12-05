@@ -90,3 +90,20 @@ function decoded_signal = huffman_decode(encoded_signal, dict)
     decoded_signal = huffmandeco(encoded_signal, dict);
 end
 
+%% Signal Comparison
+
+% no functions here :)
+
+%% Compression Metrics
+
+function compression_rate = calculate_compression_rate(original_bits, compressed_bits)
+    compression_rate = (original_bits - compressed_bits) / original_bits;
+end
+
+%% Error Channel Simulation
+
+function noisy_signal = bsc_channel(encoded_signal, p)
+    noisy_signal = xor(encoded_signal, rand(size(encoded_signal)) < p);
+    noisy_signal = double(noisy_signal);
+end
+
