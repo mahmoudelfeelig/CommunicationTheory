@@ -70,40 +70,30 @@ end
 %% Huffman Encoding
 
 function [encoded_signal, dict] = huffman_encode(signal, L)
-    % Convert the signal to integer values within a specified range.
-    % Normalize the signal and convert it to integers in the range [1, L]
+    % Normalize the signal to the range [0, L-1] and scale to integers
+    signal_int = round((signal - min(signal)) / (max(signal) - min(signal)) * (L - 1)) + 1;
 
-    % Normalize the signal to range from [-1, 1] to [0, L-1] and then scale to integers
-    signal_int = round((signal + 1) * (L - 1) / 2);  % Scale to range [0, L-1]
+    % Ensure values are within the range [1, L]
+    signal_int = max(min(signal_int, L), 1);
 
-    % Ensure the values are within the correct range [1, L]
-    signal_int = max(min(signal_int, L - 1), 0) + 1;  % Ensure range is [1, L]
-
-    % Check if the values are within [1, L] (no values should be > L)
-    if any(signal_int < 1 | signal_int > L)
-        error('Signal values are out of the valid range for Huffman encoding!');
-    end
-
-    % Debugging: Print the signal_int to check
+    % Debugging: Check signal range
     disp('Signal (integer values) passed to Huffman Encoding:');
     disp(signal_int);
 
-    % Find unique symbols in the signal
-    symbols = unique(signal_int);  % Find unique symbol indices
+    % Find unique symbols
+    symbols = unique(signal_int);
 
-    % Calculate the probability distribution of each symbol
-    symbol_counts = hist(signal_int, symbols);  % Count occurrences of each symbol
-    probabilities = symbol_counts / sum(symbol_counts);  % Normalize to get probabilities
+    % Calculate probabilities
+    symbol_counts = histc(signal_int, symbols);
+    probabilities = symbol_counts / sum(symbol_counts);
 
-    % Create the Huffman dictionary based on symbols and their probabilities
+    % Create Huffman dictionary
     dict = huffmandict(symbols, probabilities);
 
-    % Encode the signal using Huffman encoding
-    encoded_signal = huffmanenco(signal_int, dict);
+    % Encode the signal
+   [~, idx]   = ismember( signal_int, symbols);
+   encoded_signal = huffmanenco(idx, dict);
 end
-
-
-
 
 %% Huffman Decoding
 
@@ -207,7 +197,7 @@ decoded_signal = huffman_decode(encoded_signal, huffman_dict);
 
 % Rescale decoded signal for comparison
 quantization_step = uniform_levels(2) - uniform_levels(1);
-reconstructed_signal = decoded_signal * quantization_step - A;
+reconstructed_signal = decoded_signal * quantization_step;
 
 % Cross-correlation between input and reconstructed signal
 correlation = corrcoef(input_signal, reconstructed_signal);
@@ -235,18 +225,19 @@ disp(['Compression Rate: ', num2str(compression_rate * 100), '%']);
 bsc_signal = bsc_channel(encoded_signal, p);
 try
     noisy_decoded = huffman_decode(double(bsc_signal), huffman_dict);
-    noisy_reconstructed_signal = noisy_decoded * quantization_step - A;
+    noisy_reconstructed_signal = noisy_decoded * quantization_step;
     % Plot noisy reconstructed signal
 
-    % Assuming noisy_reconstructed_signal has a length mismatch
+    % Ensure the lengths match for plotting
     n = length(noisy_reconstructed_signal);
-    t_reconstructed = linspace(0, duration, n);
+    min_length = min(length(input_signal), n);  % Ensure matching lengths
+    t_reconstructed = linspace(0, duration, min_length);  % Adjust time vector length
 
     figure;
-    plot(t_reconstructed, input_signal(1:n), 'b', 'DisplayName', 'Original Signal');
+    plot(t_reconstructed, input_signal(1:min_length), 'b', 'DisplayName', 'Original Signal');
     hold on;
-    plot(t_reconstructed, noisy_reconstructed_signal, 'g--', 'DisplayName', 'Noisy Reconstructed Signal');
-    legend('Location', 'best');
+    plot(t_reconstructed, noisy_reconstructed_signal(1:min_length), 'g--', 'DisplayName', 'Noisy Reconstructed Signal');
+    legend('Location', 'best')
     title('Input Signal vs Noisy Reconstructed Signal');
     xlabel('Time (s)');
     ylabel('Amplitude');
