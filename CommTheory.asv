@@ -27,12 +27,19 @@ for T_s = T_s_values
     % ylabel('Amplitude');
 end
 
-%% Step 2 Quantization
+%% Quantization
+
+% Uniform
+% function [quantized_values, levels] = uniform_quantizer(signal, L, A)
+%     levels = linspace(-A, A, L);  % Define L quantization levels
+%     delta = levels(2) - levels(1); % Step size
+%     quantized_values = round((signal + A) / delta) * delta - A; % Quantize
+% end
 
 function [quantized_values, levels] = uniform_quantizer(signal, L, A)
     % Define L quantization levels linearly spaced between -A and A
-    levels = linspace(-A, A, L);
-
+    levels = linspace(-A, A, L);  
+    
     % Quantize the signal: find the closest level to each sample
     quantized_values = zeros(size(signal));  % Initialize output array
     for i = 1:length(signal)
@@ -42,6 +49,7 @@ function [quantized_values, levels] = uniform_quantizer(signal, L, A)
     end
 end
 
+% meow :3
 function quantized_values = mu_law_quantizer(signal, L, mu)
     normalized_signal = signal / max(abs(signal)); % Normalize
     compressed_signal = sign(normalized_signal) .* log(1 + mu * abs(normalized_signal)) / log(1 + mu);
@@ -69,26 +77,11 @@ end
 
 %% Huffman Encoding
 
-function [encoded_signal, dict] = huffman_encode(signal, L)
-##    % Normalize the signal to the range [0, L-1] and scale to integers
-##    signal_int = round((signal - min(signal)) / (max(signal) - min(signal)) * (L - 1)) + 1;
-##
-##    % Ensure values are within the range [1, L]
-##    signal_int = max(min(signal_int, L), 1);
-
-    % Find unique symbols
+function [encoded_signal, dict] = huffman_encode(signal)
     symbols = unique(signal);
-
-    % Calculate probabilities
-    symbol_counts = histc(signal, symbols);
-    probabilities = symbol_counts / sum(symbol_counts);
-
-    % Create Huffman dictionary
+    probabilities = histcounts(signal, [symbols, max(symbols) + 1], 'Normalization', 'probability');
     dict = huffmandict(symbols, probabilities);
-
-    % Encode the signal
-   [~, idx]   = ismember( signal, symbols);
-   encoded_signal = huffmanenco(idx, dict);
+    encoded_signal = huffmanenco(signal, dict);
 end
 
 %% Huffman Decoding
@@ -100,7 +93,6 @@ end
 %% Signal Comparison
 
 % no functions here :)
-
 
 %% Compression Metrics
 
@@ -141,10 +133,9 @@ for LValue = L_Values
     % disp(['Mean Absolute Error (Uniform): ', num2str(mae_uniform), 'For the value of L:', num2str(LValue)]);
     % disp(['Variance of Error (Uniform): ', num2str(var_uniform), 'For the value of L:', num2str(LValue)]);
     mae_Values(1, i) = mae_uniform;
-    var_Values(1, i) = var_uniform;
-    i = i + 1;
+    var_Values(1, i)= var_uniform;
+    i = i+1;
 end
-
 figure;
 plot(mae_Values, L_Values);
 title('Mean values vs L values');
@@ -170,9 +161,8 @@ for LValue = L_Values
     sqnr_uniform = calculate_sqnr(input_signal, uniform_quantized);
     % sqnr_uniform = calculate_sqnr(input_signal, mu_quantized);
     sqnr_Values(1, i) = sqnr_uniform;
-    i = i + 1;
+    i = i+1;
 end
-
 figure;
 plot(sqnr_Values, L_Values);
 title('SQNR values vs L values');
@@ -181,7 +171,7 @@ ylabel('L values');
 
 % Step 5: Encoding (Huffman Encoding)
 
-[encoded_signal, huffman_dict] = huffman_encode(uniform_quantized, L);
+[encoded_signal, huffman_dict] = huffman_encode(uniform_quantized);
 % [encoded_signal, huffman_dict] = huffman_encode(mu_quantized);
 
 % Step 6: Simulate a Channel (Noiseless)
@@ -194,6 +184,7 @@ decoded_signal = huffman_decode(encoded_signal, huffman_dict);
 % Rescale decoded signal for comparison
 quantization_step = uniform_levels(2) - uniform_levels(1);
 reconstructed_signal = decoded_signal * quantization_step;
+
 
 % Cross-correlation between input and reconstructed signal
 correlation = corrcoef(input_signal, reconstructed_signal);
@@ -239,15 +230,13 @@ try
     ylabel('Amplitude');
 
 catch e
-    disp('Error during huffman decoding due to an invalid encoded sequence');
-    rethrow(e);
+    disp('Error during huffman decoding due to an invalid encoded sequence')
+    rethrow(e)
 end
-
 
 %% Enhancing Signal Approximation
 
-% one could increase the number of quantization levels but that would be
+% one could increase the number of quantization levels but that would be 
 % resource-extensive if implemented irl
 % more elegantly we could resort to more advanced encoding techniques
 % such as arithmetic coding :)
-
