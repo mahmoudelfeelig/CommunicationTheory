@@ -219,6 +219,12 @@ try
     min_length = min(length(input_signal), n);  % Ensure matching lengths
     t_reconstructed = linspace(0, duration, min_length);  % Adjust time vector length
 
+    % display the cross-correlation in the erroneous :) channel
+    % commenting the code because it produces an error when the signals have
+    % different lengths
+    % normalized_xcorr = xcorr(input_signal, noisy_reconstructed_signal, 'coeff');
+    % disp(['Cross-correlation in the erroneous channel: ', num2str(normalized_xcorr(1, 2))]);
+
     figure;
     plot(t_reconstructed, input_signal(1:min_length), 'b', 'DisplayName', 'Original Signal');
     hold on;
