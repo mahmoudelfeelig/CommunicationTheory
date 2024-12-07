@@ -70,11 +70,10 @@ end
 %% Huffman Encoding
 
 function [encoded_signal, dict] = huffman_encode(signal)
-% ##    % Normalize the signal to the range [0, L-1] and scale to integers
-% ##    signal_int = round((signal - min(signal)) / (max(signal) - min(signal)) * (L - 1)) + 1;
-% ##
-% ##    % Ensure values are within the range [1, L]
-% ##    signal_int = max(min(signal_int, L), 1);
+%    % Normalize the signal to the range [0, L-1] and scale to integers
+%    signal_int = round((signal - min(signal)) / (max(signal) - min(signal)) * (L - 1)) + 1;
+%    % Ensure values are within the range [1, L]
+%    signal_int = max(min(signal_int, L), 1);
 
     % Find unique symbols
     symbols = unique(signal);
@@ -226,7 +225,7 @@ disp(['Compression Rate: ', num2str(compression_rate * 100), '%']);
 bsc_signal = bsc_channel(encoded_signal, p);
 try
     noisy_decoded = huffman_decode(double(bsc_signal), huffman_dict);
-    noisy_reconstructed_signal = noisy_decoded * quantization_step;
+    noisy_reconstructed_signal = 2.* noisy_decoded * quantization_step - A;
     % Plot noisy reconstructed signal
 
     % Ensure the lengths match for plotting
