@@ -5,7 +5,7 @@ f = 1000; % Frequency in Hz
 duration = 0.01; % Signal duration in seconds
 T_s = 0.0001; % Sampling interval
 t = 0:T_s:duration; % Time vector
-% L = 8; % Number of quantization levels
+L = 32; % Number of quantization levels
 mu = 255; % For μ-law quantization
 p = 0.01; % Error probability in Binary Symmetric Channel
 
@@ -27,7 +27,7 @@ for T_s = T_s_values
     % ylabel('Amplitude');
 end
 
-%% Step 2 Quantization
+%% Quantization
 
 function [quantized_values, levels] = uniform_quantizer(signal, L, A)
     % Define L quantization levels linearly spaced between -A and A
@@ -69,12 +69,12 @@ end
 
 %% Huffman Encoding
 
-function [encoded_signal, dict] = huffman_encode(signal, L)
-##    % Normalize the signal to the range [0, L-1] and scale to integers
-##    signal_int = round((signal - min(signal)) / (max(signal) - min(signal)) * (L - 1)) + 1;
-##
-##    % Ensure values are within the range [1, L]
-##    signal_int = max(min(signal_int, L), 1);
+function [encoded_signal, dict] = huffman_encode(signal)
+% ##    % Normalize the signal to the range [0, L-1] and scale to integers
+% ##    signal_int = round((signal - min(signal)) / (max(signal) - min(signal)) * (L - 1)) + 1;
+% ##
+% ##    % Ensure values are within the range [1, L]
+% ##    signal_int = max(min(signal_int, L), 1);
 
     % Find unique symbols
     symbols = unique(signal);
@@ -123,7 +123,6 @@ input_signal = sample_signal(A, f, T_s, duration);
 
 % Step 2: Quantization
 
-L = 32;
 [uniform_quantized, uniform_levels] = uniform_quantizer(input_signal, L, A);
 mu_quantized = mu_law_quantizer(input_signal, L, mu);
 
@@ -181,13 +180,13 @@ ylabel('L values');
 
 % Step 5: Encoding (Huffman Encoding)
 
-[encoded_signal, huffman_dict] = huffman_encode(uniform_quantized, L);
+[encoded_signal, huffman_dict] = huffman_encode(uniform_quantized);
 % [encoded_signal, huffman_dict] = huffman_encode(mu_quantized);
 
 % Step 6: Simulate a Channel (Noiseless)
 
 % Huffman decoding to reconstruct the signal
-decoded_signal = huffman_decode(encoded_signal, huffman_dict);
+decoded_signal = 2 .* huffman_decode(encoded_signal, huffman_dict) - A;
 
 % Step 7: Signal Comparison
 
@@ -208,6 +207,12 @@ legend;
 title('Input Signal vs Reconstructed Signal');
 xlabel('Time (s)');
 ylabel('Amplitude');
+% Debugging
+disp(max(reconstructed_signal))
+disp(min(reconstructed_signal))
+disp(max(input_signal))
+disp(min(input_signal))
+disp('hi')
 
 % Step 8: Compression Efficiency and Rate
 
@@ -233,7 +238,7 @@ try
     plot(t_reconstructed, input_signal(1:min_length), 'b', 'DisplayName', 'Original Signal');
     hold on;
     plot(t_reconstructed, noisy_reconstructed_signal(1:min_length), 'g--', 'DisplayName', 'Noisy Reconstructed Signal');
-    legend('Location', 'best')
+    legend('Location', 'northeast')
     title('Input Signal vs Noisy Reconstructed Signal');
     xlabel('Time (s)');
     ylabel('Amplitude');

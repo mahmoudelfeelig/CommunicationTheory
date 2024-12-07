@@ -5,7 +5,7 @@ f = 1000; % Frequency in Hz
 duration = 0.01; % Signal duration in seconds
 T_s = 0.0001; % Sampling interval
 t = 0:T_s:duration; % Time vector
-% L = 8; % Number of quantization levels
+L = 32; % Number of quantization levels
 mu = 255; % For μ-law quantization
 p = 0.01; % Error probability in Binary Symmetric Channel
 
@@ -115,7 +115,6 @@ input_signal = sample_signal(A, f, T_s, duration);
 
 % Step 2: Quantization
 
-L = 32;
 [uniform_quantized, uniform_levels] = uniform_quantizer(input_signal, L, A);
 mu_quantized = mu_law_quantizer(input_signal, L, mu);
 
